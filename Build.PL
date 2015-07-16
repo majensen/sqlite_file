@@ -1,20 +1,29 @@
 use Module::Build;
 
 Module::Build->new
-    ( module_name        => 'SQLite_File',
-      perl               => '5.8',
-      requires           => {
-			     'DBD::SQLite'                 => '1.25',
-			     'Fcntl'                       => 0
-                            },
-      build_requires     => {
-	                     'Test::More'                  => 0,
-                             'AnyDBM_File::Importer'       => 0,
-                             'Module::Build'               => 0
-                            },
-      create_makefile_pl => 'passthrough',
-      recommends         => {
-	                     'AnyDBM_File::Importer'       => 0
-                            },
-      license            => 'perl',
-    )->create_build_script;
+  ( dist_name        => 'SQLite_File',
+    dist_abstract    => 'DB_File emulator with SQLite backend',
+    dist_version_from => 'lib/SQLite_File.pm',
+    dist_author      => 'Mark A. Jensen',
+    perl               => '5.8',
+    requires           => {
+      'DBD::SQLite'                 => '1.25',
+      'Fcntl'                       => 0
+     },
+    build_requires     => {
+      'Test::More'                  => 0,
+      'AnyDBM_File::Importer'       => 0,
+      'Module::Build'               => 0
+     },
+    create_makefile_pl => 'passthrough',
+    recommends         => {
+      'AnyDBM_File::Importer'       => 0
+     },
+    license            => 'perl',
+    meta_merge => {
+      resources => {
+	bugtracker => 'http://rt.cpan.org/Public/Dist/Display.html?Name=SQLite_File',
+	repository  => 'http://github.com/majensen/sqlite_file.git',
+      }
+     },
+   )->create_build_script;
