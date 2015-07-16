@@ -9,3 +9,4 @@ t/001_tie.t
 t/002_bdb.t
 Makefile.PL
 META.yml
+META.json

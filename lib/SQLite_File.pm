@@ -310,7 +310,7 @@ END
 			   {RaiseError => 1, AutoCommit => 0});
     $self->dbh( $dbh );
     # pragmata inspired by Bio::DB::SeqFeature::Store::DBI::SQLite
-    $dbh->do("PRAGMA synchronous = OFF");
+#    $dbh->do("PRAGMA synchronous = OFF");
     $dbh->do("PRAGMA temp_store = MEMORY");
     $dbh->do("PRAGMA cache_size = ".($index->{cachesize} || 20000));
     for ($index->{'type'}) {

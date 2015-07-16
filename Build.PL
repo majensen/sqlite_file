@@ -10,12 +10,14 @@ Module::Build->new
       'DBD::SQLite'                 => '1.25',
       'Fcntl'                       => 0
      },
+    configure_requires => {
+      'Module::Build' => 0
+     },
     build_requires     => {
       'Test::More'                  => 0,
       'AnyDBM_File::Importer'       => 0,
       'Module::Build'               => 0
      },
-    create_makefile_pl => 'passthrough',
     recommends         => {
       'AnyDBM_File::Importer'       => 0
      },
