@@ -1,0 +1,8 @@
+Revision history for Perl module SQLite_File
+
+0.02 Mon Oct 12 21:00:00 2009
+    - fix pod; full find_dup functionality
+0.01 Mon Oct 12 10:34:44 2009
+    - original version; created by ExtUtils::ModuleMaker 0.51
+
+

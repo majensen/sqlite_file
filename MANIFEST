@@ -1,0 +1,11 @@
+MANIFEST
+README
+LICENSE
+Todo
+Changes
+Build.PL
+lib/SQLite_File.pm
+t/001_tie.t
+t/002_bdb.t
+Makefile.PL
+META.yml

@@ -1,0 +1,31 @@
+---
+name: SQLite_File
+version: 0.02
+author: []
+abstract: 'Tie to SQLite, with DB_File emulation'
+license: perl
+resources:
+  license: ~
+requires:
+  DBD::SQLite: 1.25
+  Fcntl: 0
+build_requires:
+  AnyDBM_File::Importer: 0
+  Module::Build: 0
+  Test::More: 0
+recommends:
+  AnyDBM_File::Importer: 0
+provides:
+  SQLite_File:
+    file: lib/SQLite_File.pm
+    version: 0.02
+  SQLite_File::BTREEINFO:
+    file: lib/SQLite_File.pm
+  SQLite_File::HASHINFO:
+    file: lib/SQLite_File.pm
+  SQLite_File::RECNOINFO:
+    file: lib/SQLite_File.pm
+generated_by: Module::Build version 0.31012
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
