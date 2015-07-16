@@ -1,5 +1,7 @@
 Revision history for Perl module SQLite_File
 
+0.03 2015-07-15
+    - added git repo metadata, some "modernizing"
 0.02 Mon Oct 12 21:00:00 2009
     - fix pod; full find_dup functionality
 0.01 Mon Oct 12 10:34:44 2009
