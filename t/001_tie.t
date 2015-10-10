@@ -1,6 +1,4 @@
 # -*-perl-*-
-# $Id: SQLite_File.t 16251 2009-10-09 21:41:00Z maj $
-# convert to CPAN 
 BEGIN {
     use lib '../lib';
     use Test::More tests => 62;

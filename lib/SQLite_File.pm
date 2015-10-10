@@ -145,7 +145,7 @@ LICENSE file included with this module.
 package SQLite_File;
 use strict;
 use warnings;
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use vars qw( $AUTOLOAD ) ;
 
@@ -351,6 +351,10 @@ END
     }
     $self->_index if ($infix and $infix =~ /</ and $index->{type} eq 'BINARY');
     $self->commit(1);
+    # barryc fix : fast forward the autokey
+    my ($sth)=$self->dbh->prepare("select max(pk) from hash");
+    $sth->execute();
+    ($AUTOPK)=$sth->fetchrow_array();
     return $self;
 }
 
