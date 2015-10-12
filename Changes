@@ -1,4 +1,8 @@
 Revision history for Perl module SQLite_File
+0.041 2015-10-10
+    - added patch from @tokuhirom to prevent BSD system fail
+      (thanks tokuhirom and Slaven)
+    - updated copyright
 0.04 2015-10-10
     - added patch from Barry C that prevents unique constraint
       violation when opening a hash db file later

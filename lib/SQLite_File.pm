@@ -121,11 +121,10 @@ to this:
 
 L<AnyDBMImporter>, L<DBD::SQLite>, L<DB_File>, L<AnyDBM_File>
 
-=head1 AUTHOR - Mark A. Jensen
+=head1 AUTHOR
 
-Email jensen -at- fortinbras -dot- us
-http://fortinbras.us
-http://www.bioperl.org/wiki/Mark_Jensen
+ Mark A. Jensen < MAJENSEN -at- cpan -dot- org >
+ http://fortinbras.us
 
 =head1 CONTRIBUTORS
 
@@ -133,6 +132,8 @@ This code owes an intellectual debt to Lincoln Stein. Inelegancies and
 bugs are mine.
 
 =head1 COPYRIGHT
+
+(c) 2009-2015 by Mark A. Jensen
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.
@@ -145,7 +146,7 @@ LICENSE file included with this module.
 package SQLite_File;
 use strict;
 use warnings;
-our $VERSION = '0.04';
+our $VERSION = '0.041';
 
 use vars qw( $AUTOLOAD ) ;
 
@@ -282,7 +283,7 @@ sub TIEHASH {
     }
     else {
 	# if no file specified, use a temp file...
-	($fh, $file) = tempfile();
+	($fh, $file) = tempfile(EXLOCK => 0);
 	# if keep not explicitly specified, 
 	# remove the tempfile at destroy...
 	$keep = 0 if !defined $keep;
@@ -410,7 +411,7 @@ sub TIEARRAY {
     }
     else {
 	# if no file specified, use a temp file...
-	($fh, $file) = tempfile();
+	($fh, $file) = tempfile(EXLOCK => 0);
 	# if keep not explicitly specified, 
 	# remove the tempfile at destroy...
 	$keep = 0 if !defined $keep;
