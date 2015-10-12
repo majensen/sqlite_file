@@ -19,12 +19,6 @@ provides:
   SQLite_File:
     file: lib/SQLite_File.pm
     version: '0.050'
-  SQLite_File::BTREEINFO:
-    file: lib/SQLite_File.pm
-  SQLite_File::HASHINFO:
-    file: lib/SQLite_File.pm
-  SQLite_File::RECNOINFO:
-    file: lib/SQLite_File.pm
 recommends:
   AnyDBM_File::Importer: '0'
 requires:

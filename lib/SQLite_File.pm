@@ -1757,7 +1757,9 @@ sub rm_idx {
 
 1;
 
-package SQLite_File::HASHINFO;
+
+package #hide from PAUSE
+  SQLite_File::HASHINFO;
 use strict;
 use warnings;
 
@@ -1771,7 +1773,8 @@ sub new {
 
 1;
 
-package SQLite_File::BTREEINFO;
+package #hide from PAUSE
+  SQLite_File::BTREEINFO;
 use strict;
 use warnings;
 
@@ -1785,7 +1788,8 @@ sub new {
 
 1;
 
-package SQLite_File::RECNOINFO;
+package #hide from PAUSE
+  SQLite_File::RECNOINFO;
 use strict;
 use warnings;
 
@@ -1798,4 +1802,3 @@ sub new {
 }
 
 1;
-
