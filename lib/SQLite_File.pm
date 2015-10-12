@@ -146,7 +146,7 @@ LICENSE file included with this module.
 package SQLite_File;
 use strict;
 use warnings;
-our $VERSION = '0.041';
+our $VERSION = '0.050';
 
 use vars qw( $AUTOLOAD ) ;
 

@@ -1,5 +1,5 @@
 Revision history for Perl module SQLite_File
-0.041 2015-10-10
+0.050 2015-10-10
     - added patch from @tokuhirom to prevent BSD system fail
       (thanks tokuhirom and Slaven)
     - updated copyright
