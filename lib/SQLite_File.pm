@@ -132,7 +132,9 @@ http://www.bioperl.org/wiki/Mark_Jensen
 This code owes an intellectual debt to Lincoln Stein. Inelegancies and
 bugs are mine.
 
-=head1 COPYRIGHT
+=head1 COPYRIGHT AND LICENSE
+
+(c) 2009-2017 Mark A. Jensen
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.
@@ -153,21 +155,22 @@ BEGIN {
     unless (eval "require DBD::SQLite; 1") {
  	croak( "SQLite_File requires DBD::SQLite" );
      }
-    use Fcntl qw(O_CREAT O_RDWR O_RDONLY);
+    use Fcntl qw(O_CREAT O_RDWR O_RDONLY O_TRUNC);
 }
 use DBI qw(:sql_types);
 use File::Temp qw( tempfile );
 use Carp;
 
 our @EXPORT = qw( 
-                 $DB_HASH $DB_BTREE $DB_RECNO 
-                 R_DUP R_CURSOR R_FIRST R_LAST 
-                 R_NEXT R_PREV R_IAFTER R_IBEFORE 
+                 $DB_HASH $DB_BTREE $DB_RECNO
+                 R_DUP R_CURSOR R_FIRST R_LAST
+                 R_NEXT R_PREV R_IAFTER R_IBEFORE
                  R_NOOVERWRITE R_SETCURSOR
                  O_CREAT O_RDWR O_RDONLY O_SVWST
+		 O_TRUNC
                  );
 
-our $DB_HASH = new SQLite_File::HASHINFO; 
+our $DB_HASH = new SQLite_File::HASHINFO;
 our $DB_BTREE = new SQLite_File::BTREEINFO;
 our $DB_RECNO = new SQLite_File::RECNOINFO;
 
@@ -233,6 +236,7 @@ sub CURSOR {
 sub TIEHASH {
     my $class = shift;
     my ($file, $flags, $mode, $index, $keep) = @_;
+    $flags //= O_CREAT|O_RDWR;
     my $self = {};
     bless($self, $class);
     # allow $mode to be skipped
@@ -246,7 +250,7 @@ sub TIEHASH {
     unless (defined $index and ref($index) =~ /INFO$/) {
 	croak(__PACKAGE__.": Index type selector must be a HASHINFO, BTREEINFO, or RECNOINFO object");
     }
-    
+
     $self->{ref} = 'HASH';
     $self->{index} = $index;
     $self->{pending} = 0;
@@ -256,10 +260,6 @@ sub TIEHASH {
 	# you'll love this...
 	my $setmode;
 	for ($flags) {
-	    !defined && do {
-		$infix = ">";
-		last;
-	    };
 	    $_ eq 'O_SVWST' && do { #bullsith kludge
 		$_ = 514;
 	    };
@@ -269,6 +269,9 @@ sub TIEHASH {
 	    };
 	    ($_ & O_RDWR) && do {
 		$infix = '+'.($infix ? $infix : '<');
+	      };
+	    ($_ & O_TRUNC) && do {
+	      $infix = '>';
 	    };
 	    do { # O_RDONLY
 		$infix = '<' unless $infix;
@@ -313,6 +316,7 @@ END
 #    $dbh->do("PRAGMA synchronous = OFF");
     $dbh->do("PRAGMA temp_store = MEMORY");
     $dbh->do("PRAGMA cache_size = ".($index->{cachesize} || 20000));
+
     for ($index->{'type'}) {
 	my $flags = $index->{flags} || 0;
 	!defined && do {
@@ -361,6 +365,7 @@ END
 sub TIEARRAY {
     my $class = shift;
     my ($file, $flags, $mode, $index, $keep) = @_;
+    $flags //= O_CREAT|O_RDWR;
     my $self = {};
     bless($self, $class);
 
@@ -384,10 +389,6 @@ sub TIEARRAY {
     if ($file) {
 	my $setmode;
 	for ($flags) {
-	    !defined && do {
-		$infix = ">";
-		last;
-	    };
 	    $_ eq 'O_SVWST' && do { #bullsith kludge
 		$_ = 514;
 	    };
@@ -397,6 +398,9 @@ sub TIEARRAY {
 	    };
 	    ($_ & O_RDWR) && do {
 		$infix = '+'.($infix ? $infix : '<');
+	    };
+	    ($_ & O_TRUNC) && do {
+	      $infix = '>';
 	    };
 	    do { # O_RDONLY
 		$infix = '<' unless $infix;
@@ -449,6 +453,10 @@ END
 	$_ eq 'RECNO' && do {
 	    $self->dbh->do("CREATE TABLE IF NOT EXISTS hash $arr_tbl");
 	    $self->dbh->do($create_idx);
+	    my $r = $self->dbh->selectall_arrayref("select * from hash");
+	    for (@$r) {
+	      push @{$self->SEQIDX},$$_[0];
+	    }
 	    last;
 	};
 	do {
@@ -456,7 +464,6 @@ END
 	};
     }
     $self->commit(1);
-    $self->{len} = 0;
     return $self;
 }
 

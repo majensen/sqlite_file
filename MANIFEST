@@ -9,6 +9,9 @@ t/001_tie.t
 t/002_bdb.t
 t/003_barry.t
 t/004_barry.t
+t/005_rt122654.t
+t/test_a.db
+t/test_h.db
 Makefile.PL
 META.yml
 META.json
