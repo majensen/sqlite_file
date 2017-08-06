@@ -145,6 +145,7 @@ LICENSE file included with this module.
 =cut
 
 package SQLite_File;
+use base qw/Tie::Hash Tie::Array/;
 use strict;
 use warnings;
 our $VERSION = '0.04';
@@ -472,16 +473,13 @@ END
 sub FETCH {
     my $self = shift;
     my $key = shift;
+    my $fkey;
     return unless $self->dbh;
-
     $self->commit;
     if (!$self->{ref} or $self->ref eq 'HASH') {
-	{ # filter key
-	    local $_ = $key;
-	    $self->_fetch_key_filter;
-	    $key = $_;
-	}
-	$self->get_sth->execute($key); # fetches on column 'id'
+      local $_ = $key;
+      $self->_store_key_filter;
+      $self->get_sth->execute($_); # fetches on column 'id'
     }
     elsif ($self->ref eq 'ARRAY') {
 	if (defined ${$self->SEQIDX}[$key]) {
@@ -500,12 +498,9 @@ sub FETCH {
 	$self->_last_pk( $ret->[1] ); # store the returned pk
 	$ret->[0] =~ s{<SQUOT>}{'}g;
 	$ret->[0] =~ s{<DQUOT>}{"}g;
-	{ # filter value
-	    local $_ = $ret->[0];
-	    $self->_fetch_value_filter;
-	    $ret->[0] = $_;
-	}
-	return $ret->[0]; # always returns the object
+	local $_ = $ret->[0];
+	$self->_fetch_value_filter;
+	return $_; # always returns the object
     }
     else {
 	$self->_last_pk( undef ); # fail in pk
@@ -516,59 +511,63 @@ sub FETCH {
 sub STORE {
     my $self = shift;
     my ($key, $value) = @_;
+    my ($fkey, $fvalue);
     return unless $self->dbh;
-    { # filter value
-	local $_ = $value;
-	$self->_store_value_filter;
-	$value = $_;
+    {
+      # filter value
+      local $_ = $value;
+      $self->_store_value_filter;
+      $fvalue = $_;
     }
-    $value =~ s{'}{<SQUOT>}g;
-    $value =~ s{"}{<DQUOT>}g;
+    {
+      # filter key 
+      $_ = $key;
+      $self->_store_key_filter;
+      $fkey = $_;
+    }
+    $fvalue =~ s{'}{<SQUOT>}g;
+    $fvalue =~ s{"}{<DQUOT>}g;
     my ($pk, $sth);
     if ( !defined $self->{ref} or $self->ref eq 'HASH' ) {
-	{ # filter key 
-	    local $_ = $key;
-	    $self->_store_key_filter;
-	    $key = $_;
+      if ( $self->dup ) { # allowing duplicates
+	$pk = $self->_get_pk;
+	$sth = $self->put_sth;
+	$sth->bind_param(1,$fkey);
+	$sth->bind_param(2,$fvalue, SQL_BLOB);
+	$sth->bind_param(3,$pk);
+	$self->put_sth->execute();
+	push @{$self->SEQIDX}, $pk;
+      }
+      else { # no duplicates...
+	#need to check if key is already present
+	if ( $self->EXISTS($key) )
+	  {
+	    $sth = $self->upd_sth;
+	    $sth->bind_param(1,$fvalue, SQL_BLOB);
+	    $sth->bind_param(2,$key);
+	    $sth->bind_param(3,$self->_last_pk);
+	    $sth->execute();
+	  }
+	else {
+	  $pk = $self->_get_pk;
+	  $sth = $self->put_sth;
+	  $sth->bind_param(1,$fkey);
+	  $sth->bind_param(2,$fvalue, SQL_BLOB);
+	  $sth->bind_param(3,$pk);
+	  $sth->execute();
+	  push @{$self->SEQIDX}, $pk;
 	}
-	if ( $self->dup ) { # allowing duplicates
-	    $pk = $self->_get_pk;
-	    $sth = $self->put_sth;
-	    $sth->bind_param(1,$key);
-	    $sth->bind_param(2,$value, SQL_BLOB);
-	    $sth->bind_param(3,$pk);
-	    $self->put_sth->execute();
-	    push @{$self->SEQIDX}, $pk;
-	}
-	else { # no duplicates...
-	    #need to check if key is already present
-	    if ( $self->EXISTS($key) ) {
-		$sth = $self->upd_sth;
-		$sth->bind_param(1,$value, SQL_BLOB);
-		$sth->bind_param(2,$key);
-		$sth->bind_param(3,$self->_last_pk);
-		$sth->execute();
-	    }
-	    else {
-		$pk = $self->_get_pk;
-		$sth = $self->put_sth;
-		$sth->bind_param(1,$key);
-		$sth->bind_param(2,$value, SQL_BLOB);
-		$sth->bind_param(3,$pk);
-		$sth->execute();
-		push @{$self->SEQIDX}, $pk;
-	    }
-	}
-	$self->{_stale} = 1;
+      }
+      $self->{_stale} = 1;
     }
     elsif ( $self->ref eq 'ARRAY' ) {
-	# need to check if the key is already present
-	if (!defined ${$self->SEQIDX}[$key] ) {
-	    $self->put_sth->execute($self->get_idx($key), $value);
-	}
-	else {
-	    $self->upd_sth->execute($value,$self->get_idx($key));
-	}
+      # need to check if the key is already present
+      if (!defined ${$self->SEQIDX}[$key] ) {
+	$self->put_sth->execute($self->get_idx($key), $fvalue);
+      }
+      else {
+	$self->upd_sth->execute($fvalue,$self->get_idx($key));
+      }
     }
     ++$self->{pending};
     $value;
@@ -578,20 +577,19 @@ sub DELETE {
     my $self = shift;
     my $key = shift;
     return unless $self->dbh;
-
+    my $fkey;
     { # filter key
 	local $_ = $key;
-	$self->_fetch_key_filter;
-	$key = $_;
+	$self->_store_key_filter;
+	$fkey = $_;
     }
     $self->_reindex if ($self->index->{type} eq 'BINARY' and $self->_index_is_stale);
     my $oldval;
     if (!$self->ref or $self->ref eq 'HASH') {
-	return unless $self->get_sth->execute($key);
+	return unless $self->get_sth->execute($fkey);
 	my $ret = $self->get_sth->fetch;
 	$oldval = $ret->[0];
-#	$self->dbh->do("DELETE FROM hash WHERE id = '$key'");
-	$self->del_sth->execute($key); # del on id
+	$self->del_sth->execute($fkey); # del on id
 	# update the sequential side
 	if ($ret->[1]) {
 	    delete ${$self->SEQIDX}[_find_idx($ret->[1],$self->SEQIDX)];
@@ -610,7 +608,9 @@ sub DELETE {
 	croak( __PACKAGE__.": tied type not recognized" );
     }
     ++$self->{pending};
-    return $oldval;
+    $_ = $oldval;
+    $self->_fetch_value_filter;
+    return $_;
 }
 
 sub EXISTS {
@@ -620,17 +620,14 @@ sub EXISTS {
 
     $self->commit;
     if (!$self->ref or $self->ref eq 'HASH') {
-	return defined $self->FETCH($key) ? 1 : 0;
+      local $_ = $key;
+      $self->_store_key_filter;
+      $self->get_sth->execute($_);
+      my $ret = $self->get_sth->fetch;
+      return $self->_last_pk(defined($ret) ? $ret->[1] : undef);
     }
     elsif ($self->ref eq 'ARRAY') {
-	if (defined(${$self->SEQIDX}[$key])) {
-	    $self->_last_pk(${$self->SEQIDX}[$key]);
-	    return 1;
-	}
-	else {
-	    $self->_last_pk(undef);
-	    return 0;
-	}
+      return $self->_last_pk(${$self->SEQIDX}[$key]);
     }
     else {
 	croak(__PACKAGE__.": tied type not recognized");
@@ -741,11 +738,12 @@ sub SHIFT {
     return if (!$self->{ref} or $self->ref ne 'ARRAY');
     $self->get_sth->execute( $self->get_idx(0) );
     my $ret = $self->get_sth->fetch;
-#    $self->dbh->do("DELETE FROM hash WHERE id = ".$self->get_idx(0));
     $self->del_sth->execute($self->get_idx(0));
     # bookkeeping
     $self->shift_idx;
-    return defined $ret ? $ret->[0] : $ret;
+    $_ = $ret && $ret->[0];
+    $self->_fetch_value_filter;
+    return $_;
 }
 
 sub UNSHIFT {
@@ -753,6 +751,7 @@ sub UNSHIFT {
     my @values = @_;
     return if (!$self->{ref} or $self->ref ne 'ARRAY');
     my $n = @values;
+    $self->_store_value_filter for @values;
     return unless $self->dbh;
     for ($self->unshift_idx($n)) {
 	$self->put_sth->execute($_,shift @values);
@@ -778,6 +777,7 @@ sub SPLICE {
     my @new_idx = map { $AUTOKEY++ } @list;
     splice( @$SEQIDX, $offset, $length, @new_idx );
     $self->put_sth->execute($_, shift @list) for @new_idx;
+    $self->_fetch_value_filter for @ret;
     return @ret;
 }    
 
@@ -818,7 +818,8 @@ sub DESTROY {
 sub filter_store_key { 
     my $self = shift;
     my $code = shift;
-    unless (ref($code) eq 'CODE') {
+    
+    unless (!defined($code) or ref($code) eq 'CODE') {
 	croak(__PACKAGE__."::filter_store_key requires a coderef argument");
     }
     $self->_store_key_filter($code);
@@ -828,7 +829,7 @@ sub filter_store_key {
 sub filter_store_value { 
     my $self = shift;
     my $code = shift;
-    unless (ref($code) eq 'CODE') {
+    unless (!defined($code) or ref($code) eq 'CODE') {
 	croak(__PACKAGE__."::filter_store_value requires a coderef argument");
     }
     $self->_store_value_filter($code);
@@ -838,7 +839,7 @@ sub filter_store_value {
 sub filter_fetch_key { 
     my $self = shift;
     my $code = shift;
-    unless (ref($code) eq 'CODE') {
+    unless (!defined($code) or ref($code) eq 'CODE') {
 	croak(__PACKAGE__."::filter_fetch_key requires a coderef argument");
     }
     $self->_fetch_key_filter($code);    
@@ -847,7 +848,7 @@ sub filter_fetch_key {
 sub filter_fetch_value { 
     my $self = shift;
     my $code = shift;
-    unless (ref($code) eq 'CODE') {
+    unless (!defined($code) or ref($code) eq 'CODE') {
 	croak(__PACKAGE__."::filter_fetch_value requires a coderef argument");
     }
     $self->_fetch_value_filter($code);
@@ -1450,7 +1451,6 @@ sub partial_match {
 
 sub dbh {
     my $self = shift;
-    
     return $self->{'dbh'} = shift if @_;
     return $self->{'dbh'};
 }
@@ -1464,6 +1464,7 @@ sub dbh {
  Args    : scalar string (statement descriptor)
  Note    : Calls such as $db->put_sth are autoloaded through
            this method; please see source for valid descriptors
+
 =cut
 
 sub sth {
@@ -1482,20 +1483,25 @@ sub sth {
 }
 
 # autoload statement handle getters
+# autoload filters
 
 sub AUTOLOAD {
     my $self = shift;
     my @pth = split(/::/, $AUTOLOAD); 
-
     my $desc = $pth[-1];
     unless ($desc =~ /^(.*?)_sth$/) {
 	croak(__PACKAGE__.": Subroutine '$AUTOLOAD' is undefined in ".__PACKAGE__);
     }
     $desc = $1;
-    unless (grep /^$desc$/, keys %{$STMT{$self->ref}}) {
+    if (defined $desc) {
+      unless (grep /^$desc$/, keys %{$STMT{$self->ref}}) {
 	croak(__PACKAGE__.": Statement accessor ${desc}_sth not defined for type ".$self->ref);
+      }
+      return $self->sth($desc);
     }
-    $self->sth($desc);
+    else {
+      croak __PACKAGE__.": Shouldn't be here; call was to '$pth[-1]'";
+    }
 }
 
 =head2 commit()

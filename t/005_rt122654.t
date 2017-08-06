@@ -1,11 +1,8 @@
 use lib '../lib';
 use Test::More;
 use DBI;
-use AnyDBM_File;
-use AnyDBM_File::Importer qw(:bdb);
 use SQLite_File;
 use File::Spec;
-@AnyDBM_File::ISA = qw( SQLite_File );
 
 my $dir = -d 't' ? 't' : '.';
 my $db_name = File::Spec->catfile($dir,'test_a.db');
@@ -18,7 +15,7 @@ is_deeply $rows, [[1, 'spam'],[2, 'eggs'],[3, 'sausage']], 'test.db ok before ti
 $dbh->disconnect;
 {
   my @db;
-ok tie(@db,'AnyDBM_File',$db_name), 'array code';
+ok tie(@db,'SQLite_File',$db_name), 'array code';
 is_deeply \@db, [qw/spam eggs sausage/], 'tied array matches db';
 
 }
@@ -37,7 +34,7 @@ is_deeply $rows, [[1, 'spam', 1],[2, 'eggs', 2],[3, 'sausage', 3]], 'test.db ok 
 $dbh->disconnect;
 {
   my %db;
-  ok tie(%db,'AnyDBM_File',$db_name), 'hash code';
+  ok tie(%db,'SQLite_File',$db_name), 'hash code';
    is_deeply \%db, { 1 => 'spam', 2 => 'eggs', 3 => 'sausage' }, 'tied hash matches db';
 }
 $dbh = DBI->connect("dbi:SQLite:dbname=$db_name");
