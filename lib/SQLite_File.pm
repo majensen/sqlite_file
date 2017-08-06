@@ -29,12 +29,18 @@ SQLite_File - Tie to SQLite, with DB_File emulation
  @AnyDBM_File::ISA = qw( DB_File SQLite_File SDBM );
  my %db;
  tie(%db, 'AnyDBM_File', 'my.db', @dbmargs)
+
+ # Filter with DBM_Filter
+
+ use DBM_Filter;
+ tie(%db, 'SQLite_File', 'my.db');
+ (tied %db)->Filter_Push('utf8');
  
 =head1 DESCRIPTION
 
 This module allows a hash or an array to be tied to a SQLite DB via
 L<DBI> plus L<DBD::SQLite>, in a way that emulates many features of
-Berkeley-DB-based DB_File. In particular, this module offers another
+Berkeley-DB-based L<DB_File>. In particular, this module offers another
 choice for ActiveState users, who may find it difficult to get a
 working L<DB_File> installed, but can't failover to SDBM due to its
 record length restrictions. SQLite_File requires
@@ -43,7 +49,7 @@ install required.
 
 =head2 Key/Value filters
 
-The filter hooks C<fetch_key_filter>, C<fetch_value_filter>, C<store_key_filter>, and C<store_value_filter> are honored.
+The filter hooks C<fetch_key_filter>, C<fetch_value_filter>, C<store_key_filter>, and C<store_value_filter> are honored. L<DBM_Filter> can be used as an API.
 
 =head2 DB_File Emulation
 
@@ -131,11 +137,11 @@ L<AnyDBMImporter>, L<DBD::SQLite>, L<DB_File>, L<AnyDBM_File>
 This code owes an intellectual debt to Lincoln Stein. Inelegancies and
 bugs are mine.
 
+Thanks to Barry C. and "Justin Case".
+
 =head1 COPYRIGHT AND LICENSE
 
 (c) 2009-2017 Mark A. Jensen
-
-(c) 2009-2015 by Mark A. Jensen
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.
@@ -149,7 +155,7 @@ package SQLite_File;
 use base qw/Tie::Hash Tie::Array/;
 use strict;
 use warnings;
-our $VERSION = '0.050';
+our $VERSION = '0.1000';
 
 use vars qw( $AUTOLOAD ) ;
 
