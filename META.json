@@ -40,7 +40,7 @@
    "provides" : {
       "SQLite_File" : {
          "file" : "lib/SQLite_File.pm",
-         "version" : "0.050"
+         "version" : "0.1000"
       }
    },
    "release_status" : "stable",
@@ -55,5 +55,6 @@
          "url" : "http://github.com/majensen/sqlite_file.git"
       }
    },
-   "version" : "0.050"
+   "version" : "0.1000",
+   "x_serialization_backend" : "JSON::PP version 2.27300_01"
 }

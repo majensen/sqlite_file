@@ -53,9 +53,9 @@ The filter hooks C<fetch_key_filter>, C<fetch_value_filter>, C<store_key_filter>
 
 =head2 DB_File Emulation
 
-The intention was to create a DBM that could almost completely substitute for 
+The intention was to create a DBM that could almost completely substitute for
 C<DB_File>, so that C<DB_File> could be replaced everywhere in code by
-C<AnyDBM_File>, and things would just work. Currently, it is slightly more 
+C<AnyDBM_File>, and things would just work. Currently, it is slightly more
 complicated than that, but not too much more. 
 
 Versions of C<$DB_HASH>, C<$DB_BTREE>, and C<$DB_RECNO>, as well as
@@ -152,7 +152,7 @@ LICENSE file included with this module.
 =cut
 
 package SQLite_File;
-use base qw/Tie::Hash Tie::Array/;
+use base qw/Tie::Hash Tie::Array Exporter/;
 use strict;
 use warnings;
 our $VERSION = '0.1000';
@@ -163,13 +163,14 @@ BEGIN {
     unless (eval "require DBD::SQLite; 1") {
  	croak( "SQLite_File requires DBD::SQLite" );
      }
-    use Fcntl qw(O_CREAT O_RDWR O_RDONLY O_TRUNC);
 }
+
+use Fcntl qw(O_CREAT O_RDWR O_RDONLY O_TRUNC);
 use DBI qw(:sql_types);
 use File::Temp qw( tempfile );
 use Carp;
 
-our @EXPORT = qw( 
+our @EXPORT_OK = qw( 
                  $DB_HASH $DB_BTREE $DB_RECNO
                  R_DUP R_CURSOR R_FIRST R_LAST
                  R_NEXT R_PREV R_IAFTER R_IBEFORE

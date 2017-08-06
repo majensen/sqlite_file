@@ -2,7 +2,7 @@
 use lib '../lib';
 use Test::More;
 use File::Spec;
-use SQLite_File;
+use SQLite_File qw/O_RDWR/;
 
 my $dir = -d 't' ? 't' : '.';
 my $testdb = File::Spec->catfile($dir,'my.db');
