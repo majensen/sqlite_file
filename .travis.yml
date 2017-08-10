@@ -1,0 +1,30 @@
+language: perl
+dist: trusty
+perl:
+  - "5.26"
+  - "5.24"
+  - "5.22"
+  - "5.20"
+  - "5.18"
+  - "5.16"
+  - "5.14"
+  - "5.12"
+  - "5.10"
+  - "5.8"
+
+env:
+
+before_install:
+  - sudo apt-get update -qq
+  # perl pkgs
+  - cpanm Test::Pod Test::CPAN::Changes
+
+install:
+
+before_script:
+
+script:
+  - perl Build.PL
+  - yes | ./Build installdeps --cpan_client 'cpanm -n'
+  - ./Build disttest
+  
