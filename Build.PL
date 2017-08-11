@@ -17,6 +17,7 @@ Module::Build->new
       'DBI'                         => 0,
       'AnyDBM_File'                 => 0,
       'AnyDBM_File::Importer'       => 0,
+      'File::Temp'                  => 0,
       'Module::Build'               => 0
      },
     recommends         => {
