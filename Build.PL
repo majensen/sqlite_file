@@ -5,7 +5,7 @@ Module::Build->new
     dist_abstract    => 'DB_File emulator with SQLite backend',
     dist_version_from => 'lib/SQLite_File.pm',
     dist_author      => 'Mark A. Jensen',
-    perl               => '5.10',
+    perl               => '5.010',
     requires           => {
       'DBD::SQLite'                 => '1.25',
       'Fcntl'                       => 0
