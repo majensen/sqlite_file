@@ -31,5 +31,9 @@ resources:
   bugtracker: http://rt.cpan.org/Public/Dist/Display.html?Name=SQLite_File
   license: http://dev.perl.org/licenses/
   repository: http://github.com/majensen/sqlite_file.git
+<<<<<<< HEAD
 version: '0.1003'
+=======
+version: '0.1002'
+>>>>>>> 435d5829ea7598699c2629af4c3ad061de90d4ba
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'

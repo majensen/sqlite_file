@@ -57,6 +57,10 @@
          "url" : "http://github.com/majensen/sqlite_file.git"
       }
    },
+<<<<<<< HEAD
    "version" : "0.1003",
+=======
+   "version" : "0.1002",
+>>>>>>> 435d5829ea7598699c2629af4c3ad061de90d4ba
    "x_serialization_backend" : "JSON::PP version 2.27300_01"
 }
