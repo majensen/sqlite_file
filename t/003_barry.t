@@ -6,7 +6,7 @@ use SQLite_File;
 
 my $build = Module::Build->current();
 
-my $testdb_h = File::Temp->new(UNLINK => 0);
+my $testdb_h = File::Temp->new(UNLINK => 0, EXLOCK => 0);
 my $testdb = $testdb_h->filename;
 $build->notes('testdb' => $testdb);
 my ($key, $value);
