@@ -115,7 +115,7 @@ to this:
       unless @AnyDBM_File::ISA == 1; # 
   }
   use AnyDBM_File;
-  use AnyDBMImporter qw(:bdb);
+  use AnyDBM_File::Importer qw(:bdb);
   # ...
 
   $DB_BTREE->{cachesize} = 100000;
@@ -125,7 +125,7 @@ to this:
 
 =head1 SEE ALSO
 
-L<AnyDBMImporter>, L<DBD::SQLite>, L<DB_File>, L<AnyDBM_File>
+L<AnyDBM_File::Importer>, L<DBD::SQLite>, L<DB_File>, L<AnyDBM_File>
 
 =head1 AUTHOR
 
