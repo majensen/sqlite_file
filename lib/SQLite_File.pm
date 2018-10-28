@@ -155,7 +155,7 @@ package SQLite_File;
 use base qw/Tie::Hash Tie::Array Exporter/;
 use strict;
 use warnings;
-our $VERSION = '0.1005';
+our $VERSION = '0.1006';
 
 use vars qw( $AUTOLOAD ) ;
 
@@ -1668,7 +1668,7 @@ sub _find_idx {
 	next unless defined $$seqidx[$_];
 	last if $pk == $$seqidx[$_];
     }
-    return (defined $$seqidx[$i] and $pk == $$seqidx[$i] ? $i : undef);
+    return (defined $i and defined $$seqidx[$i] and $pk == $$seqidx[$i] ? $i : undef);
 }
 
 # =head2 _wring_SEQIDX()
